@@ -207,6 +207,8 @@ static void ls_tail()
 static void ls_tree(const unsigned char *sha1, char *path)
 {
 	struct tree *tree;
+	const char *p[] = { path, NULL };
+	struct pathspec pathspec;
 
 	tree = parse_tree_indirect(sha1);
 	if (!tree) {
@@ -216,7 +218,9 @@ static void ls_tree(const unsigned char *sha1, char *path)
 	}
 
 	ls_head();
-	read_tree_recursive(tree, "", 0, 1, NULL, ls_item, NULL);
+	init_pathspec(&pathspec, p);
+	read_tree_recursive(tree, "", 0, 1, &pathspec, ls_item, NULL);
+	free_pathspec(&pathspec);
 	ls_tail();
 }
 
@@ -258,6 +262,7 @@ void cgit_print_tree(const char *rev, char *path)
 	unsigned char sha1[20];
 	struct commit *commit;
 	const char *paths[] = {path, NULL};
+	struct pathspec pathspec;
 
 	if (!rev)
 		rev = ctx.qry.head;
@@ -279,6 +284,8 @@ void cgit_print_tree(const char *rev, char *path)
 	}
 
 	match_path = path;
-	read_tree_recursive(commit->tree, "", 0, 0, paths, walk_tree, NULL);
+	init_pathspec(&pathspec, paths);
+	read_tree_recursive(commit->tree, "", 0, 0, &pathspec, walk_tree, NULL);
+	free_pathspec(&pathspec);
 	ls_tail();
 }

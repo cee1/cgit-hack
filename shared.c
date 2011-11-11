@@ -306,7 +306,7 @@ void cgit_diff_tree(const unsigned char *old_sha1,
 		    filepair_fn fn, const char *prefix, int ignorews)
 {
 	struct diff_options opt;
-	int prefixlen;
+	const char *p[] = { prefix, NULL };
 
 	diff_setup(&opt);
 	opt.output_format = DIFF_FORMAT_CALLBACK;
@@ -318,10 +318,7 @@ void cgit_diff_tree(const unsigned char *old_sha1,
 	opt.format_callback = cgit_diff_tree_cb;
 	opt.format_callback_data = fn;
 	if (prefix) {
-		opt.nr_paths = 1;
-		opt.paths = &prefix;
-		prefixlen = strlen(prefix);
-		opt.pathlens = &prefixlen;
+		init_pathspec(&opt.pathspec, p);
 	}
 	diff_setup_done(&opt);
 
@@ -331,6 +328,7 @@ void cgit_diff_tree(const unsigned char *old_sha1,
 		diff_root_tree_sha1(new_sha1, "", &opt);
 	diffcore_std(&opt);
 	diff_flush(&opt);
+	free_pathspec(&opt.pathspec);
 }
 
 void cgit_diff_commit(struct commit *commit, filepair_fn fn, const char *prefix)

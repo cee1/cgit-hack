@@ -20,9 +20,19 @@ static int write_compressed_tar_archive(struct archiver_args *args,const char *f
 	f.argv[0] = f.cmd;
 	f.argv[1] = NULL;
 	cgit_open_filter(&f);
-	rv = write_tar_archive(args);
+	rv = write_tar_archive(NULL, args);
 	cgit_close_filter(&f);
 	return rv;
+}
+
+static int _write_zip_archive(struct archiver_args *args)
+{
+	return write_zip_archive(NULL, args);
+}
+
+static int _write_tar_archive(struct archiver_args *args)
+{
+	return write_tar_archive(NULL, args);
 }
 
 static int write_tar_gzip_archive(struct archiver_args *args)
@@ -41,10 +51,10 @@ static int write_tar_xz_archive(struct archiver_args *args)
 }
 
 const struct cgit_snapshot_format cgit_snapshot_formats[] = {
-	{ ".zip", "application/x-zip", write_zip_archive, 0x01 },
+	{ ".zip", "application/x-zip", _write_zip_archive, 0x01 },
 	{ ".tar.gz", "application/x-gzip", write_tar_gzip_archive, 0x02 },
 	{ ".tar.bz2", "application/x-bzip2", write_tar_bzip2_archive, 0x04 },
-	{ ".tar", "application/x-tar", write_tar_archive, 0x08 },
+	{ ".tar", "application/x-tar", _write_tar_archive, 0x08 },
 	{ ".tar.xz", "application/x-xz", write_tar_xz_archive, 0x10 },
 	{}
 };

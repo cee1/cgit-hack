@@ -265,6 +265,7 @@ struct cgit_context {
 	struct cgit_page page;
 };
 
+typedef int (*write_archive_fn_t)(struct archiver_args *);
 struct cgit_snapshot_format {
 	const char *suffix;
 	const char *mimetype;

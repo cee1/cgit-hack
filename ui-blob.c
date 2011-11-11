@@ -33,15 +33,20 @@ int cgit_print_file(char *path, const char *head)
 	unsigned long size;
 	struct commit *commit;
 	const char *paths[] = {path, NULL};
+
 	if (get_sha1(head, sha1))
 		return -1;
 	type = sha1_object_info(sha1, &size);
 	if(type == OBJ_COMMIT && path) {
+		struct pathspec pathspec;
+		init_pathspec(&pathspec, paths);
+
 		commit = lookup_commit_reference(sha1);
 		match_path = path;
 		matched_sha1 = sha1;
 		found_path = 0;
-		read_tree_recursive(commit->tree, "", 0, 0, paths, walk_tree, NULL);
+		read_tree_recursive(commit->tree, "", 0, 0, &pathspec, walk_tree, NULL);
+		free_pathspec(&pathspec);
 		if (!found_path)
 			return -1;
 		type = sha1_object_info(sha1, &size);
@@ -80,10 +85,14 @@ void cgit_print_blob(const char *hex, char *path, const char *head)
 	type = sha1_object_info(sha1, &size);
 
 	if((!hex) && type == OBJ_COMMIT && path) {
+		struct pathspec pathspec;
+		init_pathspec(&pathspec, paths);
+
 		commit = lookup_commit_reference(sha1);
 		match_path = path;
 		matched_sha1 = sha1;
-		read_tree_recursive(commit->tree, "", 0, 0, paths, walk_tree, NULL);
+		read_tree_recursive(commit->tree, "", 0, 0, &pathspec, walk_tree, NULL);
+		free_pathspec(&pathspec);
 		type = sha1_object_info(sha1,&size);
 	}
 

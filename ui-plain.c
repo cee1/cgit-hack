@@ -145,6 +145,7 @@ void cgit_print_plain(struct cgit_context *ctx)
 	unsigned char sha1[20];
 	struct commit *commit;
 	const char *paths[] = {ctx->qry.path, NULL};
+	struct pathspec pathspec;
 
 	if (!rev)
 		rev = ctx->qry.head;
@@ -165,7 +166,10 @@ void cgit_print_plain(struct cgit_context *ctx)
 	}
 	else
 		match_baselen = basedir_len(paths[0]);
-	read_tree_recursive(commit->tree, "", 0, 0, paths, walk_tree, NULL);
+
+	init_pathspec(&pathspec, paths);
+	read_tree_recursive(commit->tree, "", 0, 0, &pathspec, walk_tree, NULL);
+	free_pathspec(&pathspec);
 	if (!match)
 		html_status(404, "Not found", 0);
 	else if (match == 2)
