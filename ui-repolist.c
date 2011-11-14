@@ -128,7 +128,7 @@ void print_pager(int items, int pagelen, char *search, char *url)
 		char *title = fmt("Page %d", i+1);
 		int ofs = i * pagelen;
 
-		if (url) {
+		if (url && *url) {
 			char *delim = "?";
 
 			html("<a title='");
@@ -272,30 +272,52 @@ void cgit_print_repolist()
 
 	html("<table summary='repository list' class='list nowrap'>");
 	for (i=0; i<cgit_repolist.count; i++) {
+		int is_newsection = 0;
+		int is_toplevel;
+
 		ctx.repo = &cgit_repolist.repos[i];
 		if (!(is_match(ctx.repo) && is_in_url(ctx.repo)))
 			continue;
+
+		section = ctx.repo->section;
+		if (section && !strcmp(section, ""))
+			section = NULL;
+
+		if (!sorted && section != NULL) {
+			if (last_section == NULL || strcmp(section, last_section))
+				is_newsection = 1;
+		}
+		last_section = section;
+		is_toplevel = !(ctx.qry.url && *ctx.qry.url);
+
+		if (is_toplevel && section && !is_newsection)
+			continue;
+
 		hits++;
 		if (hits <= ctx.qry.ofs)
 			continue;
 		if (hits > ctx.qry.ofs + ctx.cfg.max_repo_count)
 			continue;
+
 		if (!header++)
 			print_header(columns);
-		section = ctx.repo->section;
-		if (section && !strcmp(section, ""))
-			section = NULL;
-		if (!sorted &&
-		    ((last_section == NULL && section != NULL) ||
-		    (last_section != NULL && section == NULL) ||
-		    (last_section != NULL && section != NULL &&
-		     strcmp(section, last_section)))) {
-			htmlf("<tr class='nohover'><td colspan='%d' class='reposection'>",
-			      columns);
-			html_txt(section);
-			html("</td></tr>");
-			last_section = section;
+
+		if (is_newsection) {
+			if (is_toplevel) {
+				htmlf("<tr><td colspan='%d'>", columns);
+				html_link_open(cgit_repourl(section), NULL, "repo-group");
+				html_txt(section);
+				html_link_close();
+				html("</td></tr>");
+				continue;
+			} else {
+				htmlf("<tr class='nohover'><td colspan='%d' class='reposection'>",
+				      columns);
+				html_txt(section);
+				html("</td></tr>");
+			}
 		}
+
 		htmlf("<tr><td class='%s'>",
 		      !sorted && section ? "sublevel-repo" : "toplevel-repo");
 		cgit_summary_link(ctx.repo->name, ctx.repo->name, NULL, NULL);

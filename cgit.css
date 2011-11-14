@@ -519,6 +519,11 @@ table.list td.reposection {
 	color: #888;
 }
 
+table.list td a.repo-group {
+       font-weight: bold;
+        color: #0d0050;
+}
+
 a.button {
 	font-size: 80%;
 	padding: 0em 0.5em;
