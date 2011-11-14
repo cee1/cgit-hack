@@ -118,13 +118,44 @@ void print_header(int columns)
 }
 
 
-void print_pager(int items, int pagelen, char *search)
+void print_pager(int items, int pagelen, char *search, char *url)
 {
 	int i;
 	html("<div class='pager'>");
-	for(i = 0; i * pagelen < items; i++)
-		cgit_index_link(fmt("[%d]", i+1), fmt("Page %d", i+1), NULL,
-				search, i * pagelen);
+
+	for(i = 0; i * pagelen < items; i++) {
+		char *name = fmt("[%d]", i+1);
+		char *title = fmt("Page %d", i+1);
+		int ofs = i * pagelen;
+
+		if (url) {
+			char *delim = "?";
+
+			html("<a title='");
+			html_attr(title);
+			html("'");
+
+			html(" href='");
+			if (ctx.cfg.virtual_root) {
+				html_attr(ctx.cfg.virtual_root);
+				if (ctx.cfg.virtual_root[strlen(ctx.cfg.virtual_root) - 1] != '/')
+					html("/");
+			} else
+				html(ctx.cfg.script_name);
+
+			html(url);
+			if (ofs) {
+				html(delim);
+				htmlf("ofs=%d", ofs);
+			}
+			html("'>");
+			html_txt(name);
+			html("</a>");
+
+		} else
+			cgit_index_link(name, title, NULL, search, ofs);
+	}
+
 	html("</div>");
 }
 
@@ -291,7 +322,7 @@ void cgit_print_repolist()
 	if (!hits)
 		cgit_print_error("No repositories found");
 	else if (hits > ctx.cfg.max_repo_count)
-		print_pager(hits, ctx.cfg.max_repo_count, ctx.qry.search);
+		print_pager(hits, ctx.cfg.max_repo_count, ctx.qry.search, ctx.qry.url);
 	cgit_print_docend();
 }
 
