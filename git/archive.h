@@ -24,6 +24,9 @@ struct archiver {
 };
 extern void register_archiver(struct archiver *);
 
+extern int write_tar_archive(const struct archiver *, struct archiver_args *);
+extern int write_zip_archive(const struct archiver *, struct archiver_args *);
+
 extern void init_tar_archiver(void);
 extern void init_zip_archiver(void);
 
