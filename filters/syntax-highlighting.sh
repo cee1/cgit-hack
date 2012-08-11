@@ -40,6 +40,6 @@ BASENAME="$1"
 EXTENSION="${BASENAME##*.}"
 
 # map Makefile and Makefile.* to .mk
-[ "${BASENAME%%.*}" == "Makefile" ] && EXTENSION=mk
+[ "${BASENAME%%.*}" = "Makefile" ] && EXTENSION=mk
 
-exec highlight --force -f -I -X -S $EXTENSION 2>/dev/null
+exec highlight --force -f -I -S $EXTENSION 2>/dev/null
